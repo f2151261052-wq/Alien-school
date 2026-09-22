@@ -1,621 +1,87 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<meta name="theme-color" content="#0a0e27" />
-<title>Escape The Alien School</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Alien School</title>
 <style>
-  :root {
-    --bg: #0a0e27; --panel: rgba(20,25,55,0.85);
-    --accent: #00e5ff; --accent2: #ff2e88;
-    --good: #2ee66b; --bad: #ff4757;
-    --text: #e8f4ff; --muted: #8a9bb8;
+  body {
+    margin: 0;
+    background: #0a0e27;
+    color: #e8f4ff;
+    font-family: sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
   }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-  html, body {
-    height: 100%; overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg); color: var(--text); user-select: none;
+  h1 { color: #00e5ff; text-align: center; font-size: 24px; }
+  input {
+    width: 100%; max-width: 320px;
+    padding: 12px; border-radius: 10px;
+    border: 2px solid #00e5ff;
+    background: rgba(0,0,0,0.4);
+    color: #fff; font-size: 16px;
+    margin-bottom: 14px;
   }
-  #webgl-bg { position: fixed; inset: 0; z-index: 0; }
-  #app {
-    position: relative; z-index: 1; height: 100dvh;
-    display: flex; flex-direction: column;
-    max-width: 480px; margin: 0 auto;
-  }
-  header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 16px;
-    background: rgba(10,14,39,0.7); backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0,229,255,0.15);
-    font-size: 13px;
-  }
-  header .stat { display: flex; align-items: center; gap: 6px; }
-  header .stat b { color: var(--accent); }
-  header #lives b { color: var(--bad); }
-
-  main { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
-  main::-webkit-scrollbar { width: 4px; }
-  main::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.3); border-radius: 4px; }
-
-  .screen { display: none; animation: fadeIn 0.35s ease; }
-  .screen.active { display: block; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-
-  h1 {
-    font-size: 26px; line-height: 1.15; margin-bottom: 8px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text; background-clip: text;
-    color: transparent; font-weight: 800;
-  }
-  h2 { font-size: 20px; margin-bottom: 12px; color: var(--accent); }
-  h3 { font-size: 16px; margin-bottom: 8px; color: var(--accent2); }
-  p { line-height: 1.55; font-size: 14px; }
-  .muted { color: var(--muted); font-size: 13px; }
-
-  .card {
-    background: var(--panel);
-    border: 1px solid rgba(0,229,255,0.2);
-    border-radius: 16px; padding: 16px; margin-bottom: 14px;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  }
-  .card.glow { box-shadow: 0 0 24px rgba(0,229,255,0.25), 0 8px 24px rgba(0,0,0,0.4); }
-
   button {
-    display: block; width: 100%;
-    padding: 14px 16px; font-size: 15px; font-weight: 700;
-    border: none; border-radius: 12px;
-    background: linear-gradient(135deg, var(--accent), #0088cc);
-    color: #001018; cursor: pointer; margin-top: 10px;
-    transition: transform 0.12s ease, opacity 0.2s;
-    font-family: inherit;
+    width: 100%; max-width: 320px;
+    padding: 16px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, #00e5ff, #0088cc);
+    color: #001018; font-size: 16px; font-weight: bold;
+    cursor: pointer;
   }
   button:active { transform: scale(0.97); }
-  button.secondary { background: transparent; border: 1.5px solid var(--accent); color: var(--accent); }
-  button.danger { background: linear-gradient(135deg, var(--accent2), #cc0055); color: #fff; }
-  button.ghost { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid rgba(255,255,255,0.12); }
-
-  .mission-item {
-    display: flex; align-items: center; gap: 12px; padding: 14px;
-    background: rgba(20,25,55,0.7);
-    border: 1px solid rgba(0,229,255,0.15);
-    border-radius: 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s;
+  #result {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid #00e5ff;
+    border-radius: 12px;
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    display: none;
   }
-  .mission-item:active { transform: scale(0.98); }
-  .mission-item.locked { opacity: 0.45; cursor: not-allowed; }
-  .mission-item.done { border-color: var(--good); }
-  .mission-item .icon {
-    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-    border-radius: 10px; background: rgba(0,229,255,0.12); font-size: 20px; flex-shrink: 0;
-  }
-  .mission-item.done .icon { background: rgba(46,230,107,0.15); }
-  .mission-item .info { flex: 1; min-width: 0; }
-  .mission-item .info b { font-size: 14px; display: block; }
-  .mission-item .info span { font-size: 12px; color: var(--muted); }
-
-  .question { font-size: 16px; font-weight: 600; margin-bottom: 14px; line-height: 1.5; }
-  .options { display: flex; flex-direction: column; gap: 8px; }
-  .option {
-    padding: 13px 16px; background: rgba(255,255,255,0.05);
-    border: 1.5px solid rgba(255,255,255,0.1);
-    border-radius: 10px; font-size: 14px; cursor: pointer;
-    transition: all 0.15s; color: var(--text); text-align: left;
-  }
-  .option:active { transform: scale(0.98); }
-  .option.correct { background: rgba(46,230,107,0.2); border-color: var(--good); }
-  .option.wrong { background: rgba(255,71,87,0.2); border-color: var(--bad); }
-  .option.disabled { pointer-events: none; }
-
-  input[type="text"], textarea {
-    width: 100%; padding: 13px 14px;
-    background: rgba(0,0,0,0.35);
-    border: 1.5px solid rgba(0,229,255,0.25);
-    border-radius: 10px; color: var(--text);
-    font-size: 15px; font-family: inherit; outline: none;
-    margin-bottom: 10px; transition: border-color 0.2s;
-  }
-  input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
-  textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
-
-  .progress { height: 8px; background: rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; margin: 10px 0; }
-  .progress > div {
-    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 8px; transition: width 0.4s ease; width: 0%;
-  }
-
-  #toast {
-    position: fixed; bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(120%);
-    background: rgba(20,25,55,0.95);
-    border: 1px solid var(--accent); color: var(--text);
-    padding: 12px 20px; border-radius: 12px;
-    font-size: 14px; font-weight: 600; z-index: 999;
-    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    max-width: 90%; text-align: center;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-  }
-  #toast.show { transform: translateX(-50%) translateY(0); }
-  #toast.good { border-color: var(--good); }
-  #toast.bad { border-color: var(--bad); }
-
-  .timer {
-    display: inline-block; padding: 4px 12px;
-    background: rgba(255,46,136,0.15);
-    border: 1px solid var(--accent2); border-radius: 20px;
-    font-size: 12px; font-weight: 700; color: var(--accent2);
-    margin-bottom: 12px;
-  }
-
-  .result-emoji { font-size: 56px; text-align: center; margin: 10px 0; }
-  .center { text-align: center; }
-  .mt { margin-top: 14px; }
-  .row { display: flex; gap: 8px; }
-  .row > * { flex: 1; }
-  .badge {
-    display: inline-block; padding: 3px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 700;
-    background: rgba(0,229,255,0.15); color: var(--accent);
-  }
-
-  footer {
-    display: flex; gap: 8px; padding: 10px 16px 14px;
-    background: rgba(10,14,39,0.7); backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(0,229,255,0.15);
-  }
-  footer button { margin: 0; padding: 11px; font-size: 12px; }
 </style>
 </head>
 <body>
 
-<canvas id="webgl-bg"></canvas>
+<h1>🚀 Escape The Alien School</h1>
 
-<div id="app">
-  <header>
-    <div class="stat">👤 <b id="playerName">Cadet</b></div>
-    <div class="stat" id="lives">❤️ <b id="livesCount">3</b></div>
-    <div class="stat">⭐ <b id="scoreCount">0</b></div>
-  </header>
+<input type="text" id="inputName" placeholder="Tulis namamu...">
+<button id="btnStart">🚀 Mulai Misi</button>
 
-  <main id="main">
-    <!-- HOME -->
-    <section id="screen-home" class="screen active">
-      <h1>Escape The Alien School</h1>
-      <p class="muted">Kamu terjebak di sekolah alien. Selesaikan 5 misi bahasa Inggris untuk pulang ke Bumi! 🌍</p>
-
-      <div class="card glow mt">
-        <h3>👨‍🚀 Nama Cadet</h3>
-        <input type="text" id="inputName" placeholder="Tulis namamu..." maxlength="16" />
-        <button id="btnStart">🚀 Mulai Misi</button>
-      </div>
-
-      <div class="card">
-        <h3>📊 Progress</h3>
-        <div class="progress"><div id="homeProgress"></div></div>
-        <p class="muted" id="homeProgressText">0 / 5 misi selesai</p>
-      </div>
-
-      <div class="card">
-        <h3>💾 Data</h3>
-        <div class="row">
-          <button class="ghost" id="btnExport">⬇️ Export</button>
-          <button class="ghost" id="btnImport">⬆️ Import</button>
-          <button class="danger" id="btnReset">🗑️ Reset</button>
-        </div>
-        <input type="file" id="fileInput" accept=".json" style="display:none" />
-      </div>
-    </section>
-
-    <!-- MISSIONS -->
-    <section id="screen-missions" class="screen">
-      <h2>🛸 Pilih Misi</h2>
-      <p class="muted" style="margin-bottom:14px">Setiap misi melatih skill bahasa Inggris yang berbeda.</p>
-      <div id="missionList"></div>
-      <button class="secondary" id="btnBackHome">← Kembali</button>
-    </section>
-
-    <!-- QUIZ -->
-    <section id="screen-quiz" class="screen">
-      <div class="timer" id="quizTimer">⏱️ 05:00</div>
-      <h2 id="quizTitle">Misi</h2>
-      <div class="progress"><div id="quizProgress"></div></div>
-      <div class="card glow mt">
-        <div class="question" id="quizQuestion">Loading...</div>
-        <div class="options" id="quizOptions"></div>
-      </div>
-      <button class="secondary" id="btnQuitQuiz">Keluar Misi</button>
-    </section>
-
-    <!-- RESULT -->
-    <section id="screen-result" class="screen">
-      <div class="result-emoji" id="resultEmoji">🎉</div>
-      <h2 id="resultTitle" class="center">Misi Selesai!</h2>
-      <div class="card center">
-        <p id="resultMsg">Kamu menyelesaikan misi.</p>
-        <div class="progress mt"><div id="resultBar"></div></div>
-        <p class="muted" id="resultDetail"></p>
-      </div>
-      <button id="btnNextMission">Misi Berikutnya →</button>
-      <button class="secondary" id="btnResultBack">Kembali ke Menu</button>
-    </section>
-
-    <!-- VICTORY -->
-    <section id="screen-victory" class="screen">
-      <div class="result-emoji">🏆</div>
-      <h1 class="center">Earth Key Unlocked!</h1>
-      <div class="card glow center">
-        <p>Kamu berhasil menyelesaikan semua misi dan pulang ke Bumi!</p>
-        <p class="mt"><span class="badge" id="victoryScore">⭐ 0</span></p>
-        <p class="muted mt" id="victoryName">Cadet</p>
-      </div>
-      <button id="btnVictoryRestart">🔁 Main Lagi</button>
-    </section>
-  </main>
-
-  <footer>
-    <button class="ghost" id="navHome">🏠 Home</button>
-    <button class="ghost" id="navMissions">🛸 Misi</button>
-    <button class="ghost" id="navSave">💾 Save</button>
-  </footer>
+<div id="result">
+  <p id="resultText">Halo!</p>
 </div>
 
-<div id="toast"></div>
-
 <script>
-/* ================================================================
-   SEMUA KODE DIJALANKAN SETELAH DOM SIAP
-   ================================================================ */
-document.addEventListener('DOMContentLoaded', function () {
+  // PENTING: seluruh listener dipasang setelah HTML siap
+  window.addEventListener('DOMContentLoaded', function () {
+    console.log('✅ DOM siap, memasang listener...');
 
-  /* ---------- Helper ---------- */
-  const $ = (id) => document.getElementById(id);
+    var btn = document.getElementById('btnStart');
+    var input = document.getElementById('inputName');
+    var result = document.getElementById('result');
+    var resultText = document.getElementById('resultText');
 
-  function toast(msg, type = '') {
-    const el = $('toast');
-    if (!el) return;
-    el.textContent = msg;
-    el.className = 'show ' + type;
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => { el.className = type; }, 2200);
-  }
-
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const el = $(id);
-    if (el) el.classList.add('active');
-    const main = $('main');
-    if (main) main.scrollTop = 0;
-  }
-
-  /* ---------- WebGL Background (optional, tidak block game) ---------- */
-  try {
-    if (typeof THREE !== 'undefined') {
-      const canvas = $('webgl-bg');
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-
-      const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x0a0e27, 0.035);
-      const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 200);
-      camera.position.z = 30;
-
-      const starGeo = new THREE.BufferGeometry();
-      const N = 900;
-      const pos = new Float32Array(N * 3);
-      const col = new Float32Array(N * 3);
-      for (let i = 0; i < N; i++) {
-        pos[i*3]   = (Math.random() - 0.5) * 200;
-        pos[i*3+1] = (Math.random() - 0.5) * 200;
-        pos[i*3+2] = (Math.random() - 0.5) * 200;
-        const c = new THREE.Color().setHSL(0.5 + Math.random() * 0.25, 0.9, 0.6);
-        col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
-      }
-      starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      starGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-      const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({
-        size: 0.35, vertexColors: true, transparent: true, opacity: 0.9,
-        blending: THREE.AdditiveBlending, depthWrite: false
-      }));
-      scene.add(stars);
-
-      const orbs = [];
-      const orbColors = [0x00e5ff, 0xff2e88, 0x2ee66b, 0xffb800];
-      for (let i = 0; i < 6; i++) {
-        const geo = new THREE.IcosahedronGeometry(1.2 + Math.random() * 0.8, 1);
-        const mat = new THREE.MeshBasicMaterial({
-          color: orbColors[i % orbColors.length], wireframe: true,
-          transparent: true, opacity: 0.55
-        });
-        const orb = new THREE.Mesh(geo, mat);
-        orb.position.set((Math.random()-0.5)*40, (Math.random()-0.5)*40, -10 - Math.random()*20);
-        orb.userData = {
-          rotX: (Math.random()-0.5)*0.008,
-          rotY: (Math.random()-0.5)*0.012,
-          sp: 0.4 + Math.random()*0.6,
-          ph: Math.random()*Math.PI*2,
-          baseY: orb.position.y
-        };
-        orbs.push(orb);
-        scene.add(orb);
-      }
-
-      window.addEventListener('resize', () => {
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-      });
-
-      const clock = new THREE.Clock();
-      (function loop() {
-        const t = clock.getElapsedTime();
-        stars.rotation.y = t * 0.02;
-        stars.rotation.x = t * 0.01;
-        orbs.forEach(o => {
-          o.rotation.x += o.userData.rotX;
-          o.rotation.y += o.userData.rotY;
-          o.position.y = o.userData.baseY + Math.sin(t*o.userData.sp + o.userData.ph)*1.5;
-        });
-        camera.position.x = Math.sin(t*0.15)*2;
-        camera.position.y = Math.cos(t*0.2)*1.5;
-        camera.lookAt(0,0,0);
-        renderer.render(scene, camera);
-        requestAnimationFrame(loop);
-      })();
-    }
-  } catch (e) {
-    console.warn('WebGL background disabled:', e);
-  }
-
-  /* ---------- Data Misi ---------- */
-  const MISSIONS = [
-    { id: 'decode', icon: '📡', title: 'Decode the Alien Message', desc: 'Reading - tebak pesan alien', timeLimit: 300,
-      questions: [
-        { q: 'The alien writes: "Greetings, Earthling. We come in peace from planet Zorb." What does the alien want?',
-          options: ['To fight humans','To make peace','To eat food','To steal books'], answer: 1 },
-        { q: 'Alien message: "Our spaceship needs fuel. Please bring water." What do they need?',
-          options: ['Food','Books','Water','Music'], answer: 2 },
-        { q: 'Read: "Zorbs are small green creatures with three eyes." How many eyes do Zorbs have?',
-          options: ['One','Two','Three','Four'], answer: 2 },
-        { q: 'Message: "Do not enter the red room. It is dangerous." What should you NOT do?',
-          options: ['Read books','Enter the red room','Say hello','Drink water'], answer: 1 },
-        { q: 'The alien said: "Thank you for helping us. You are a true friend." The alien feels...',
-          options: ['Angry','Sad','Grateful','Bored'], answer: 2 }
-      ]
-    },
-    { id: 'guard', icon: '💬', title: 'Talk to the Alien Guard', desc: 'Speaking - pilih respon yang tepat', timeLimit: 300,
-      questions: [
-        { q: 'Guard: "Halt! Who are you?" Your best answer:',
-          options: ['I am fine thank you.','My name is a student from Earth.','Yes, I like pizza.','Goodbye forever.'], answer: 1 },
-        { q: 'Guard: "Why are you here?"',
-          options: ['I want to go home, please.','Blue is my favorite color.','Yesterday I ate rice.','The cat is sleeping.'], answer: 0 },
-        { q: 'Guard: "Can you speak our language?"',
-          options: ['No, I cannot fly.','Yes, a little. I am learning.','I am 13 years old.','The book is on the table.'], answer: 1 },
-        { q: 'Guard: "Do you come in peace?"',
-          options: ['Yes, I come in peace. I mean no harm.','I have two brothers.','My school is big.',"Let's eat together tomorrow."], answer: 0 },
-        { q: 'Guard: "Follow me to the control room." What do you say?',
-          options: ["I don't like apples.",'Okay, lead the way, please.','It is raining today.','My hobby is reading.'], answer: 1 }
-      ]
-    },
-    { id: 'teleporter', icon: '⚙️', title: 'Fix the Teleporter', desc: 'Grammar - susun kalimat yang benar', timeLimit: 300,
-      questions: [
-        { q: 'Choose the correct sentence:',
-          options: ['She go to school every day.','She goes to school every day.','She going to school every day.','She gone to school every day.'], answer: 1 },
-        { q: 'Which is correct in simple past tense?',
-          options: ['I see the alien yesterday.','I saw the alien yesterday.','I seen the alien yesterday.','I seeing the alien yesterday.'], answer: 1 },
-        { q: 'Choose the correct preposition: "The book is ___ the table."',
-          options: ['in','on','at','of'], answer: 1 },
-        { q: 'Which sentence uses the correct article?',
-          options: ['I saw a alien.','I saw an alien.','I saw the an alien.','I saw alien.'], answer: 1 },
-        { q: 'Choose the correct present continuous:',
-          options: ['They is running.','They are running.','They am running.','They be running.'], answer: 1 }
-      ]
-    },
-    { id: 'dictionary', icon: '📖', title: 'Alien Dictionary', desc: 'Vocabulary - tebak arti kata', timeLimit: 300,
-      questions: [
-        { q: 'The alien says: "I am very hungry." What does "hungry" mean?',
-          options: ['Sakit','Lapar','Marah','Takut'], answer: 1 },
-        { q: 'The spaceship is enormous. "Enormous" means...',
-          options: ['Kecil','Cepat','Sangat besar','Berbahaya'], answer: 2 },
-        { q: 'The alien looks curious about humans. "Curious" means...',
-          options: ['Ingin tahu','Marah','Sedih','Takut'], answer: 0 },
-        { q: '"Please be careful in the dark room." "Careful" means...',
-          options: ['Cepat','Berhati-hati','Berani','Malas'], answer: 1 },
-        { q: '"The journey will be dangerous." "Dangerous" means...',
-          options: ['Menyenangkan','Berbahaya','Membosankan','Mudah'], answer: 1 }
-      ]
-    },
-    { id: 'broadcast', icon: '📝', title: 'Final Broadcast', desc: 'Writing - tulis pesan penyelamat', timeLimit: 300,
-      questions: [
-        { q: 'Write a short SOS message (min. 3 words): "Help! I am..."', type: 'text',
-          keywordCheck: ['help','i','am','need','earth','alien','trapped','save'] },
-        { q: 'Complete the sentence: "My name is ___. I am from ___."', type: 'text',
-          keywordCheck: ['i','am','from','my','name'] },
-        { q: 'Write one sentence about what you want to do after escaping:', type: 'text',
-          keywordCheck: ['i','will','want','go','home','see','eat','meet'] },
-        { q: 'Say thank you to the aliens. Write one sentence:', type: 'text',
-          keywordCheck: ['thank','you','thanks','alien'] },
-        { q: 'Final message: write one sentence telling Earth you are safe.', type: 'text',
-          keywordCheck: ['i','am','safe','earth','home','here'] }
-      ]
-    }
-  ];
-
-  /* ---------- State & Storage ---------- */
-  const STORAGE_KEY = 'alienSchoolSave_v1';
-  let state = {
-    playerName: 'Cadet',
-    lives: 3,
-    score: 0,
-    completed: [],
-    currentMissionId: null,
-    createdAt: null,
-    lastSaved: null
-  };
-
-  function saveState() {
-    state.lastSaved = new Date().toISOString();
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch (e) { console.warn('Save failed:', e); }
-  }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return false;
-      const data = JSON.parse(raw);
-      state = Object.assign(state, data);
-      return true;
-    } catch (e) { console.warn('Load failed:', e); return false; }
-  }
-
-  function resetState() {
-    state = {
-      playerName: 'Cadet', lives: 3, score: 0, completed: [],
-      currentMissionId: null, createdAt: new Date().toISOString(), lastSaved: null
-    };
-    saveState();
-  }
-
-  function exportJSON() {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `alien-school-save-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast('💾 Save file downloaded!', 'good');
-  }
-
-  function importJSON(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
-        if (typeof data !== 'object' || !data.playerName) throw new Error('Invalid');
-        state = Object.assign(state, data);
-        saveState();
-        updateHUD();
-        renderMissions();
-        updateHome();
-        toast('✅ Save loaded!', 'good');
-      } catch (err) { toast('❌ File tidak valid', 'bad'); }
-    };
-    reader.readAsText(file);
-  }
-
-  /* ---------- UI Update ---------- */
-  function updateHUD() {
-    const pn = $('playerName'); if (pn) pn.textContent = state.playerName || 'Cadet';
-    const lc = $('livesCount'); if (lc) lc.textContent = state.lives;
-    const sc = $('scoreCount'); if (sc) sc.textContent = state.score;
-  }
-
-  function updateHome() {
-    const pct = (state.completed.length / MISSIONS.length) * 100;
-    const hp = $('homeProgress'); if (hp) hp.style.width = pct + '%';
-    const hpt = $('homeProgressText');
-    if (hpt) hpt.textContent = `${state.completed.length} / ${MISSIONS.length} misi selesai`;
-    const inp = $('inputName');
-    if (inp) inp.value = state.playerName === 'Cadet' ? '' : state.playerName;
-  }
-
-  function renderMissions() {
-    const wrap = $('missionList');
-    if (!wrap) return;
-    wrap.innerHTML = '';
-    MISSIONS.forEach((m, i) => {
-      const done = state.completed.includes(m.id);
-      const prevDone = i === 0 || state.completed.includes(MISSIONS[i-1].id);
-      const locked = !done && !prevDone;
-
-      const el = document.createElement('div');
-      el.className = 'mission-item' + (done ? ' done' : '') + (locked ? ' locked' : '');
-      el.innerHTML = `
-        <div class="icon">${done ? '✅' : locked ? '🔒' : m.icon}</div>
-        <div class="info">
-          <b>${i+1}. ${m.title}</b>
-          <span>${m.desc}</span>
-        </div>`;
-      if (!locked && !done) el.addEventListener('click', () => startMission(m.id));
-      else if (done) el.addEventListener('click', () => toast('✅ Misi ini sudah selesai'));
-      else el.addEventListener('click', () => toast('🔒 Selesaikan misi sebelumnya dulu'));
-      wrap.appendChild(el);
-    });
-  }
-
-  /* ---------- Mission Flow ---------- */
-  let currentMission = null;
-  let currentQIndex = 0;
-  let currentCorrect = 0;
-  let timerInterval = null;
-  let timeLeft = 0;
-  let answerLocked = false;
-
-  function startMission(id) {
-    currentMission = MISSIONS.find(m => m.id === id);
-    if (!currentMission) return;
-    if (state.lives <= 0) {
-      toast('💀 Nyawa habis! Reset dulu di Home.', 'bad');
+    if (!btn) {
+      console.error('❌ Tombol tidak ditemukan!');
       return;
     }
-    state.currentMissionId = id;
-    saveState();
 
-    currentQIndex = 0;
-    currentCorrect = 0;
-    timeLeft = currentMission.timeLimit;
+    btn.addEventListener('click', function () {
+      console.log('✅ Tombol diklik!');
+      var name = input.value.trim() || 'Cadet';
+      resultText.textContent = 'Halo, ' + name + '! Selamat datang di sekolah alien. 👽';
+      result.style.display = 'block';
+      alert('TOMBOL BERFUNGSI! Nama: ' + name);
+    });
 
-    $('quizTitle').textContent = currentMission.title;
-    showScreen('screen-quiz');
-    startTimer();
-    renderQuestion();
-  }
-
-  function startTimer() {
-    clearInterval(timerInterval);
-    updateTimerDisplay();
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      updateTimerDisplay();
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        toast('⏰ Waktu habis!', 'bad');
-        loseLife();
-        finishMission(false);
-      }
-    }, 1000);
-  }
-
-  function updateTimerDisplay() {
-    const m = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-    const s = String(timeLeft % 60).padStart(2, '0');
-    const el = $('quizTimer');
-    if (el) el.textContent = `⏱️ ${m}:${s}`;
-  }
-
-  function renderQuestion() {
-    answerLocked = false;
-    const q = currentMission.questions[currentQIndex];
-    if (!q) return;
-
-    const pct = (currentQIndex / currentMission.questions.length) * 100;
-    const qp = $('quizProgress'); if (qp) qp.style.width = pct + '%';
-    const qq = $('quizQuestion'); if (qq) qq.textContent = q.q;
-
-    const opts = $('quizOptions');
-    if (!opts) return;
-    opts.innerHTML = '';
-
-    if (q.type === 'text') {
-      const ta = document.createElement('textarea');
-      ta.placeholder = 'Tulis jawabanmu di sini...';
-      ta.id = 'textAnswer';
-      const btn = document.createElement('button');
-      btn.textContent = '✅ Kirim Jawaban';
-      btn.addEventListener('click', () => submitTextAnswer(ta.value, q));
-      opts.appendChild(ta);
-      opts.appendChild(
+    console.log('✅ Listener terpasang.');
+  });
+</script>
+</body>
+</html>
